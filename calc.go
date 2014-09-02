@@ -10,13 +10,6 @@ var diffMap map[string]string
 
 func main() {
 		fmt.Println("testing...")
-		
-		// var p = []Polynomial{
-		// 		Polynomial{
-		// 			[]int{2,3},
-		// 			[]int{4,1}
-		// 		}
-		// }
 }
 
 type Polynomial2 struct {
@@ -26,7 +19,7 @@ type Polynomial2 struct {
  Pairs []PolyPair
 }
 
-// This type should be 'private'
+// This type should be 'private'?
 type PolyPair struct {
 	// Can 'Exp' be defaulted to 1?
   Coef,Exp string
@@ -34,38 +27,67 @@ type PolyPair struct {
 
 func Differentiate(p Polynomial2) (result Polynomial2) {
  count := 0
+ newPairs := make([]PolyPair, len(p.Pairs), cap(p.Pairs))
  for _,val := range p.Pairs {
- 		if coef, err := strconv.Atoi(val.Coef); err != nil {
+ 	 			// fmt.Println("here " + val.Coef + " " + val.Exp)
+ 		if coef, err := strconv.Atoi(val.Coef); err == nil {
+ 			// fmt.Println("why u no!?")
  			// coef is number
 	 		if val.Exp == "0" {
  			 // x^0 differentiates away so skip
+	 			// fmt.Println("skipping exponent of 0")
  			} else {
+ 				// fmt.Println("differentiate exponent of " + val.Exp)
  				// basic differentiatiom
  				// add function on Polynomial to incorporate string <-> int conversions
  				exp, _ := strconv.Atoi(val.Exp)
+ 				// fmt.Printf("result Pairs length is %d\n", len(newPairs))
+
  				//coef, _ := strconv.Atoi(val.Coef)
- 				result.Pairs[count] = PolyPair{strconv.Itoa(exp * coef), strconv.Itoa(exp - 1)}
+ 				newPairs[count] = PolyPair{strconv.Itoa(exp * coef), strconv.Itoa(exp - 1)}
  				count++
  			}
  		} else if newCoef := diffMap[val.Coef]; len(newCoef) > 0 {
- 			result.Pairs[count] = PolyPair{newCoef, val.Exp}
+ 			fmt.Println("Unable to convert " + val.Coef + " to number")
+ 			newPairs[count] = PolyPair{newCoef, val.Exp}
  			count++
  		} else {
+ 			fmt.Println("oops " + val.Coef)
  			// ...
  		}
  }
+ 	// only take the pairs which were added
+	result.Pairs = newPairs[0:count]
  return 
 }
 
+func (p Polynomial2) ToString() string {
+	var buffer bytes.Buffer
+	for i := range p.Pairs {
+		// if p.Pairs[i][0] < 0 {
+			// buffer.WriteString("-")
+		// } else if p.Pairs[i][0] > 0 {
+			// buffer.WriteString("+")
+		// }
+		coef := p.Pairs[i].Coef
+		if len(coef) > 1 && coef[1:len(coef)] == "-" {
+			buffer.WriteString("-")
+		}
+		buffer.WriteString(p.Pairs[i].Coef + "x")
+		if (p.Pairs[i].Exp != "0") {
+			buffer.WriteString("^" + p.Pairs[i].Exp)
+		}
+	}
+	return buffer.String()
+}
 
 func init() {
-	// Build basic integration Map
-	// This needs to be 'global'
-	diffMap := make(map[string]string)
-	diffMap["sin"] = "cos"
-	diffMap["cos"] = "sin"
-	
 
+	// Build basic integration Map
+	diffMap = map[string]string{
+		"sin" : "cos",
+		"cos" : "sin",
+	}
 }
 
 func Integrate(x float64) float64 {
@@ -118,4 +140,3 @@ func (p Polynomial) ToString() string {
 	}
 	return buffer.String()
 }
-
